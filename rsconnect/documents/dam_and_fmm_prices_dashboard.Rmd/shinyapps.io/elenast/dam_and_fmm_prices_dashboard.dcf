@@ -1,0 +1,13 @@
+name: dam_and_fmm_prices_dashboard
+title: dam_and_fmm_prices_dashboard
+username:
+account: elenast
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4637242
+bundleId: 5028942
+url: https://elenast.shinyapps.io/dam_and_fmm_prices_dashboard/
+when: 1631553877.54851
+lastSyncTime: 1631553877.54851
+asMultiple: FALSE
+asStatic: FALSE

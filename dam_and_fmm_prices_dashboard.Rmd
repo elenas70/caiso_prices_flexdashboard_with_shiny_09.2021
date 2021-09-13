@@ -1,0 +1,163 @@
+---
+title: "Pacific Northwest and Northern CA Energy Prices and Price Spreads, 2019 - 2021"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    includes:
+      after_body: footer.html
+    theme: yeti
+
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(tidyverse)
+library(plotly)
+Sys.setenv(TZ = 'GMT')
+load(file = "dampivot.RData")
+load(file="fmmpivot.RData")
+```
+
+
+Energy Prices
+=======================================================================
+
+Input{.sidebar}
+----------------------------------------------------------------
+
+
+```{r}
+sliderInput("DateRange","Dates:",
+                          min = as.Date("2019-08-01","%Y-%m-%d"),
+                          max = as.Date("2021-08-20","%Y-%m-%d"),
+                          value=c(as.Date("2021-07-01"),as.Date("2021-08-20")),
+                          timeFormat="%Y-%m-%d")
+
+```
+*Data Source:* [California ISO OASIS](http://oasis.caiso.com/mrioasis/logon.do)
+
+Price Nodes: Mid-Columbia (MidC) and North of Path 15 in California (NP15).
+
+These price series were used to estimate the value of physical transmission rights between the Pacific Northwest and Northern California. The slides that discuss this project can be viewed [here](https://rpubs.com/elenas70/valueoftransmission).
+
+By: [Elena Stolpovsky](https://www.linkedin.com/in/estolpovsky/)
+
+
+
+
+Column 
+-------------------------------------
+
+### Day Ahead Market MidC and NP15 Energy Prices 
+
+```{r}
+#renderPlotly(
+#    ggplotly(ggplot(filter(mtcars,cyl==input$my_cyl),aes(x=mpg,y=wt))+geom_point())
+#)
+renderPlotly({
+    DateRange <- input$DateRange
+    plot_dam <- dampivot %>% filter(as.Date(start)>=DateRange[1],as.Date(start)<=DateRange[2] )
+    
+     ggplot(
+       dat=plot_dam,
+       aes(x=start))+geom_line(aes(y=midc,color="MidC"))+geom_line(aes(y=np15,color="NP15"))+ xlab("") +
+  ylab("Price, $/MWh") +
+  theme(legend.title=element_blank())
+     
+  }
+  )
+
+```
+
+### 15-Min Market MidC and NP15 Energy Prices 
+
+```{r}
+renderPlotly({
+    DateRange <- input$DateRange
+     plot_fmm <- fmmpivot %>% filter(as.Date(start)>=DateRange[1],as.Date(start)<=DateRange[2] )
+    #plot_dat <- dam #%>% filter(start < "2019-08-10 07:00:00 UTC")
+    
+     ggplot(
+       dat=plot_fmm,
+       aes(x=start))+geom_line(aes(y=midc,color="MidC"))+geom_line(aes(y=np15,color="NP15"))+ xlab("") +
+  ylab("Price, $/MWh")+
+  theme(legend.title=element_blank())
+     
+  }
+  )
+```
+
+
+Price Spread
+=======================================================================
+
+Input{.sidebar}
+----------------------------------------------------------------
+
+
+```{r}
+#radioButtons(inputId="my_cyl",label="Cylinders",choices=c(4,6,8))
+sliderInput("DateRangeSpreads","Dates:",
+                          min = as.Date("2019-08-01","%Y-%m-%d"),
+                          max = as.Date("2021-08-20","%Y-%m-%d"),
+                          value=c(as.Date("2021-07-01"),as.Date("2021-08-20")),
+                          timeFormat="%Y-%m-%d")
+
+```
+*Data Source:* [California ISO OASIS](http://oasis.caiso.com/mrioasis/logon.do)
+
+Price Nodes: Mid-Columbia (MidC) and North of Path 15 in California (NP15).
+
+These price series were used to estimate the value of physical transmission rights between the Pacific Northwest and Northern California. The slides that discuss this project can be viewed [here](https://rpubs.com/elenas70/valueoftransmission).
+
+By: [Elena Stolpovsky](https://www.linkedin.com/in/estolpovsky/)
+
+
+Column 
+-------------------------------------
+
+### Day Ahead Market Price Spread: NP15 Price - MidC Price 
+
+```{r}
+#renderPlotly(
+#    ggplotly(ggplot(filter(mtcars,cyl==input$my_cyl),aes(x=mpg,y=wt))+geom_point())
+#)
+renderPlotly({
+    DateRange <- input$DateRangeSpreads
+    #plot_dat<-filter(dat, node %in% input$checked_nodes)
+    plot_dam <- dampivot %>% filter(as.Date(start)>=DateRange[1],as.Date(start)<=DateRange[2] )
+    #plot_dat <- dam #%>% filter(start < "2019-08-10 07:00:00 UTC")
+    
+     ggplot(
+       dat=plot_dam,
+       aes(x=start))+geom_line(aes(y=spread))+ geom_hline(yintercept =
+                                                                                 0, color = "red") + xlab("") +
+  ylab("Spread, $/MWh") +
+  theme(legend.title=element_blank())
+     
+  }
+  )
+
+```
+
+### 15-Min Market Price Spread: NP15 Price - MidC Price 
+
+```{r}
+renderPlotly({
+    DateRange <- input$DateRangeSpreads
+    plot_fmm <- fmmpivot %>% filter(as.Date(start)>=DateRange[1],as.Date(start)<=DateRange[2] )
+    #plot_dat <- dam #%>% filter(start < "2019-08-10 07:00:00 UTC")
+    
+     ggplot(
+       dat=plot_fmm,
+       aes(x=start))+geom_line(aes(y=spread))+ geom_hline(yintercept =
+                                                                                 0, color = "red")+ xlab("") +
+  ylab("Spread, $/MWh")+
+  theme(legend.title=element_blank())
+     
+  }
+  )
+```
